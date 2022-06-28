@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+)
 
 // example represents a user defined type with different fields.
 // Declared name (example) first then type (struct)
@@ -15,6 +19,20 @@ type example2 struct {
 	flag    bool
 	counter int16
 	pi      float32
+}
+
+// user is a struct type that declares user information.
+type user struct {
+	ID   int
+	Name string
+}
+
+// updateStats provides update stats.
+type updateStats struct {
+	Modified int
+	Duration float64
+	Success  bool
+	Message  string
 }
 
 const (
@@ -302,17 +320,132 @@ func main() {
 		}
 	*/
 
+	/*
+	 Blank Identifier
+	*/
+
+	u := user{
+		ID:   1,
+		Name: "Troyaikmen",
+	}
+
+	// update the user name. Don't care about the update stats.
+	// blank identifier used. no variable needed since we don't necessarily care about the update stats
+	if _, err := updateUser(&u); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Display the update was successful.
+	fmt.Println("Updated user record for ID", u.ID)
+
+	/*
+	 Function Idioms - see function definitions for notes, basically, Go has some quirks with fxn calls
+	*/
+
+	user, err := retrieveUser("sally")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Display the user profile.
+	fmt.Printf("%+v\n", *user)
+
+	/*
+	 Literal Functions
+	*/
+
+	var n int
+
+	// Declare an anonymous function and call it.
+	func() {
+		fmt.Println("Direct:", n)
+	}()
+
+	// Declare an anonymous function and assign it to a variable.
+	f := func() {
+		fmt.Println("Variable:", n)
+	}
+
+	// Call the anonymous function through the variable
+	f()
+
+	// Defer the call to the anonymous function till after main returns.
+	// Go has closures which means the value of n, will still be accessible to the defer fxn
+	// even though the defer function is called after the main function finishes executing.
+	defer func() {
+		fmt.Println("Defer 1:", n)
+	}()
+
+	// Set the value of n to 3 before the return.
+	n = 3
+
+	// Call the anonymous function through the variable.
+	f()
+
+	// Defer the call to the anonymous function till after main returns.
+	// Defers are called in reverse order of when they are defined. This defer executes before the one above.
+	defer func() {
+		fmt.Println("Defer 2:", n)
+	}()
 }
 
-// increment declares count as a pointer variable whose value is always an address and points to alues of type int.
+// (pointers) increment declares count as a pointer variable whose value is always an address and points to alues of type int.
 func incrementValue(inc int) {
 	inc++
 	fmt.Println("inc: \tValue of[", inc, "]\tAddr Of[", &inc, "]")
 }
 
-// increment declares count as a pointer variable whose value is always an address and points to alues of type int.
+// (pointers) increment declares count as a pointer variable whose value is always an address and points to alues of type int.
 func incrementPointer(inc *int) {
 	// Change the value of the data located at the inc address
 	*inc = *inc + 1
 	fmt.Println("inc: \tValue of[", inc, "]\tAddr Of[", &inc, "]\tValue Points To[", *inc, "]")
+}
+
+// (blank identifier) updateUser updates teh specified user document.
+func updateUser(u *user) (*updateStats, error) {
+
+	// response simulates a JSON response
+	response := `{"Modified" : 1, "Duration" : 0.005, "Success" : true, "Message" : "Error occurred!"}`
+
+	//Unmarshal the json document into a value of the userStats struct type.
+	var us updateStats
+	if err := json.Unmarshal([]byte(response), &us); err != nil {
+		return nil, err
+	}
+
+	// Check the update status to verify the update was successful
+	if us.Success != true {
+		return nil, errors.New(us.Message)
+	}
+
+	return &us, nil
+}
+
+// retrieveUser retrieves the user document for the specified user and returns a pointer to a user type value.
+func retrieveUser(name string) (*user, error) {
+
+	// Make a call to get the user in a json response.
+	// can't use inline scope here because we are using hte response returned from the getUser fxn
+	r, err := getUser(name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the json document into a value of the user struct type.
+	// err is scoped within the if statement, not outside that
+	var u user
+	if err := json.Unmarshal([]byte(r), &u); err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+// getUser simulates a web call that returns a json document for the specified user.
+func getUser(name string) (string, error) {
+
+	response := `{"id" : 1432, "name" : "sally"}`
+	return response, nil // using zero value for the return value that we aren't passing (zero value for error type is nil)
 }
