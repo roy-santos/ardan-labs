@@ -389,6 +389,76 @@ func main() {
 	defer func() {
 		fmt.Println("Defer 2:", n)
 	}()
+
+	/*
+	 Short Variable Declaration Operator
+	*/
+
+	var err1 error
+
+	// The short variable declaration operator will declare u and redeclare err1.
+	user1, err1 := getUser2()
+	if err1 != nil {
+		return
+	}
+
+	fmt.Println(user1)
+
+	// The short variable declartion operator will redeclare user1 and declare err2.
+	user1, err2 := getUser2()
+	if err2 != nil {
+		return
+	}
+
+	fmt.Println(user1)
+
+	// NOTE: short variable declaration operators only need to declare 1 new variable, anything else
+	// can be a reused variable.
+
+	/*
+	 Array Basics
+	*/
+
+	// Declare an array of five strings that is initialized
+	var fruits [5]string // compiler needs to know length of array at compile time. Cant use variable length. Consts only!
+	fruits[0] = "Apple"
+	fruits[1] = "Orange"
+	fruits[2] = "Banana"
+	fruits[3] = "Grape"
+	fruits[4] = "Plum"
+
+	// NOTE: strings are composed of 2 words, pointer and size. Moving strings around is efficient because you only need to copy the 16 bits
+	// that are used to hold pointer and size data (regardless of the size of data the pointer points to)
+
+	// Iterate over the array of strings. "value semantic" form
+	for i, fruit := range fruits { // for range loop, helps prevent going out of bounds
+		fmt.Println(i, fruit)
+	}
+
+	// "pointer semantic" form
+	for i := range fruits { // for range loop, helps prevent going out of bounds
+		fmt.Println(i, fruits[i])
+	}
+
+	// Declare an array of 4 integers that is initialized with some values
+	numbers := [4]int{10, 20, 30, 40} // literal construction syntax,
+
+	// go allows you to also specify the index (not that useful)
+	// example: numbers1 :=[4]int{0:10, 2:20, 1:30, 3:40}
+
+	// go allows you to use ellipses for size of array when using literal construction syntax
+	// example: numbers2 :=[...]int{1, 2, 3, 4, 5, 6}
+
+	// Iterate over the array of numbers
+	for i := 0; i < len(numbers); i++ { // traditional forloop syntax
+		fmt.Println(i, numbers[i])
+	}
+
+	// NOTE: go has no while loops, only for loops
+	// example "while" in go: for i<len(numbers) {...code}
+
+	// NOTE: length of an array is part of its type information. Can't assign an array
+	// of size 4 to an array of size 5, youll get a type mismatch error
 }
 
 // (pointers) increment declares count as a pointer variable whose value is always an address and points to alues of type int.
@@ -448,4 +518,8 @@ func getUser(name string) (string, error) {
 
 	response := `{"id" : 1432, "name" : "sally"}`
 	return response, nil // using zero value for the return value that we aren't passing (zero value for error type is nil)
+}
+
+func getUser2() (*user, error) {
+	return &user{1432, "Betty"}, nil
 }
