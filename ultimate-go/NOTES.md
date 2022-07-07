@@ -29,4 +29,3 @@ Question: Can we write Go code that is **fast enough**?
    <ul>
       <li> 99% of the time, answer is YES!
    </ul>
-
