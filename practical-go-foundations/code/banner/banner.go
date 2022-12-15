@@ -42,7 +42,7 @@ func main() {
 // isPalindrome("gog") -> true
 // isPalindrome("gogo") -> true
 func isPalindrome(s string) bool {
-	rs := []rune(s) // get slice of rune, makes code unicode aware
+	rs := []rune(s) // get slice of runes out of s, makes code unicode aware
 	for i := 0; i < (len(s))/2; i++ {
 		if rs[i] != rs[len(rs)-1-i] {
 			return false
