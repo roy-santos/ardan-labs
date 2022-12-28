@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -22,7 +23,7 @@ func main() {
 
 	defer file.Close()
 
-	w, err := mostCommon(file)
+	w, err := mostCommon(file, 3)
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
@@ -36,12 +37,30 @@ func main() {
 	*/
 }
 
-func mostCommon(r io.Reader) (string, error) {
+func mostCommon(r io.Reader, n int) ([]string, error) {
 	freqs, err := wordFrequency(r)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return maxWord(freqs)
+
+	// instantiate a slice of keys and populate with all keys
+	keys := make([]string, 0, len(freqs))
+	for key := range freqs {
+		keys = append(keys, key)
+	}
+
+	// sort keys slice based on its value in the freqs map
+	sort.SliceStable(keys, func(i, j int) bool {
+		return freqs[keys[i]] > freqs[keys[j]]
+	})
+
+	// instantiate slice of n common words and fill with top n words from keys slice
+	nCommonStrings := make([]string, n)
+	for i := 0; i < n; i++ {
+		nCommonStrings[i] = keys[i]
+	}
+
+	return nCommonStrings, nil
 }
 
 /*	You can use raw strings to create multi line strings

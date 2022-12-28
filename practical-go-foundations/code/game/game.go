@@ -59,6 +59,13 @@ func main() {
 	fmt.Println(p1.Keys)
 }
 
+/*
+// Implement sortByDistance(players []Player, x, y int)
+func sortByDistance(players []Player, x, y int) {
+
+}
+*/
+
 // Implement fmt.Stringer interface
 func (k Key) String() string {
 	switch k {
