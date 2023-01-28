@@ -1,54 +1,66 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func main() {
-	resp, err := http.Get("https://api.github.com/users/roy-santos")
-	if err != nil {
-		log.Fatalf("error: %s", err)
-		/*  this is shortcut to
-		log.Printf("error: %s", err)
-		os.Exit(1)
-		*/
-	}
-	if resp.StatusCode != http.StatusOK { //Go throws error if http response is invalid, for example status 400s or 500s is valid and will not be considered "error"
-		log.Fatalf("error: %s", resp.Status)
-	}
-	fmt.Printf("Content-Type: %s\n", resp.Header.Get("Content-Type"))
-	/*
-		if _, err := io.Copy(os.Stdout, resp.Body); err != nil {
-			log.Fatalf("error: can't copy - %s", err)
-		}
-	*/
-	var r Reply
-	dec := json.NewDecoder(resp.Body)
-	if err := dec.Decode(&r); err != nil {
-		log.Fatalf("error: can't decode -%s", err)
-	}
-	fmt.Println(r)
-	fmt.Printf("%#v\n", r) // this way of printing shows types of the values printed
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Millisecond)
+	defer cancel()
+	fmt.Println(githubInfo(ctx, "tebeka"))
 
-	name, numrepos, err := githubInfo("tebeka")
-	if err != nil {
-		log.Fatalf("error: can't decode %s", err)
-	} else {
-		fmt.Printf("%#v, %#v\n", name, numrepos)
-	}
+	//resp, err := http.Get("https://api.github.com/users/roy-santos")
+	//if err != nil {
+	//log.Fatalf("error: %s", err)
+	///*  this is shortcut to
+	//log.Printf("error: %s", err)
+	//os.Exit(1)
+	//*/
+	//}
+	//if resp.StatusCode != http.StatusOK { //Go throws error if http response is invalid, for example status 400s or 500s is valid and will not be considered "error"
+	//log.Fatalf("error: %s", resp.Status)
+	//}
+	//fmt.Printf("Content-Type: %s\n", resp.Header.Get("Content-Type"))
+	///*
+	//if _, err := io.Copy(os.Stdout, resp.Body); err != nil {
+	//log.Fatalf("error: can't copy - %s", err)
+	//}
+	//*/
+	//var r Reply
+	//dec := json.NewDecoder(resp.Body)
+	//if err := dec.Decode(&r); err != nil {
+	//log.Fatalf("error: can't decode -%s", err)
+	//}
+	//fmt.Println(r)
+	//fmt.Printf("%#v\n", r) // this way of printing shows types of the values printed
+	//
+	//name, numrepos, err := githubInfo("tebeka")
+	//if err != nil {
+	//log.Fatalf("error: can't decode %s", err)
+	//} else {
+	//fmt.Printf("%#v, %#v\n", name, numrepos)
+	//}
 }
 
 // githubInfo returns name and number of public repos for login
-func githubInfo(login string) (string, int, error) {
+func githubInfo(ctx context.Context, login string) (string, int, error) {
 	url := "https://api.github.com/users/" + url.PathEscape(login) // makes sure the value passed in is valid
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	// resp, err := http.Get(url)
 	if err != nil {
 		return "", 0, err
 	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", 0, err
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return "", 0, fmt.Errorf("%#v - %s", url, resp.Status)
 	}
